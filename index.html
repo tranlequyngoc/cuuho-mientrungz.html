@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>🆘 CỨU HỘ MIỀN TRUNG</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/favicon.ico" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- MarkerCluster (optional) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script defer src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🆘 CỨU HỘ MIỀN TRUNG</h1>
+    <div class="header-controls">
+      <div id="userBox" class="small">Chưa đăng nhập</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="btn-sos" class="btn danger">📣 SOS</button>
+        <button id="btn-open-sos-chat" class="btn ghost">Chat SOS</button>
+        <button id="btn-logout" class="btn ghost" style="display:none">Đăng xuất</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <aside class="left">
+      <section class="panel">
+        <strong>Đăng nhập / Đăng ký</strong>
+        <div class="small">Dùng email để quản lý bài đăng</div>
+        <form id="form-auth">
+          <input id="auth-email" type="email" placeholder="Email" required />
+          <input id="auth-password" type="password" placeholder="Mật khẩu" required />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="btn-login" class="btn" type="submit">Đăng nhập</button>
+            <button id="btn-register" class="btn ghost" type="button">Đăng ký</button>
+          </div>
+          <div class="small" style="margin-top:8px">Admin mặc định: <b>admin@gmail.com</b></div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <strong>Đăng cảnh báo</strong>
+        <div class="small">Chọn điểm trên bản đồ hoặc dùng GPS</div>
+        <form id="form-post" style="margin-top:8px">
+          <input id="post-title" type="text" placeholder="Tiêu đề (ví dụ: Ngập trước cổng chợ X)" required />
+          <textarea id="post-desc" placeholder="Mô tả, hướng an toàn, liên hệ"></textarea>
+          <div style="display:flex;gap:8px">
+            <select id="post-severity">
+              <option value="green">Ngập nhẹ</option>
+              <option value="yellow">Ngập trung bình</option>
+              <option value="red">Ngập nặng</option>
+            </select>
+            <select id="post-type">
+              <option value="marker">Chấm điểm</option>
+              <option value="area">Khoanh vùng</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+            <input id="post-file" type="file" accept="image/*,video/*" />
+            <button id="btn-getloc" type="button" class="btn ghost">Lấy vị trí</button>
+            <div id="posDisplay" class="small">Vị trí: chưa</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" type="submit">Đăng</button>
+            <button id="btn-clear" type="button" class="btn ghost">Xóa</button>
+          </div>
+          <div class="small" style="margin-top:8px">Trong chế độ <b>Khoanh vùng</b>, click 2 lần trên bản đồ để tạo vùng.</div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <strong>Điều khiển</strong>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="searchBox" type="text" placeholder="Tìm theo tiêu đề..." />
+          <button id="btn-search" class="btn ghost">Tìm</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;align-items:center" class="legend">
+          <div style="display:flex;gap:6px;align-items:center"><div class="dot" style="background:#2ecc71"></div><div class="small">Ngập nhẹ</div></div>
+          <div style="display:flex;gap:6px;align-items:center"><div class="dot" style="background:#f1c40f"></div><div class="small">Ngập TB</div></div>
+          <div style="display:flex;gap:6px;align-items:center"><div class="dot" style="background:#e74c3c"></div><div class="small">Ngập nặng</div></div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button id="btn-clear-all" class="btn ghost" title="Chỉ Admin">Clear All (Admin)</button>
+          <button id="btn-redeploy" class="btn ghost">Tải lại</button>
+        </div>
+      </section>
+
+      <section class="panel small">
+        <strong>Ghi chú</strong>
+        <ul>
+          <li>Đăng nhập để đăng và bình luận.</li>
+          <li>Admin có quyền xóa bài và xem bảng SOS.</li>
+          <li>SOS lưu vào collection <code>sos</code> để xử lý nhanh.</li>
+        </ul>
+      </section>
+    </aside>
+
+    <section class="right">
+      <div class="panel map-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Bản đồ</strong> <span class="small">(Leaflet + OpenStreetMap)</span></div>
+          <div class="small">Chọn điểm để đánh dấu / khoanh vùng</div>
+        </div>
+        <div id="map" style="margin-top:10px"></div>
+      </div>
+
+      <div class="panel feed">
+        <strong>Danh sách cảnh báo</strong>
+        <div id="postsList" style="margin-top:10px"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal chi tiết -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="dialog">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong id="modalTitle">Chi tiết</strong>
+        <div><button id="modal-close" class="btn ghost">Đóng</button></div>
+      </div>
+      <div id="modalBody" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- SOS Chat Popup -->
+  <div id="sosChat" class="modal" style="display:none" aria-hidden="true">
+    <div class="dialog" style="max-width:420px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong>Chat SOS (riêng tư)</strong>
+        <div><button id="close-sos-chat" class="btn ghost">Đóng</button></div>
+      </div>
+      <div id="sosMessages" style="margin-top:8px;max-height:50vh;overflow:auto"></div>
+      <form id="sosForm" style="display:flex;gap:8px;margin-top:8px">
+        <input id="sosInput" placeholder="Ghi nội dung SOS..." style="flex:1"/>
+        <button class="btn" type="submit">Gửi</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- App script (module) -->
+  <script type="module" src="app.js"></script>
+
+  <!-- Service worker registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js').catch(()=>{ /* ignore */ });
+    }
+  </script>
+</body>
+</html>
