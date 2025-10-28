@@ -1,0 +1,15 @@
+{
+  "name": "Cứu hộ Miền Trung",
+  "short_name": "Cứu hộ MT",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#051421",
+  "theme_color": "#0ea5a6",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192'><rect width='192' height='192' rx='24' fill='%230ea5a6'/><path d='M96 24v88' stroke='%23021' stroke-width='6' stroke-linecap='round'/><circle cx='96' cy='140' r='6' fill='%23021'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
